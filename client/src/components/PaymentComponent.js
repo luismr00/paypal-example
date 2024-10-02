@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 const PaymentComponent = () => {
     const [subType, setSubType] = useState("basic");
     const [paymentFrequency, setPaymentFrequency] = useState("monthly");
+    const [eventData, setEventData] = useState(null);
+    const [eventActions, setEventActions] = useState(null);
     const subTypeRef = useRef(subType);  // Hold the latest value of subType in a ref
     const paymentFrequencyRef = useRef(paymentFrequency);
 
@@ -12,16 +14,23 @@ const PaymentComponent = () => {
         if (subType === "basic") {
             planId = paymentFrequency === "monthly" ? "P-4RY214569J5152447M3OHIQY" : "P-9YT87785T9430173DM3OQRWQ";
         } else {
-            planId = paymentFrequency === "monthly" ? "P-5A7812209H7735713M3OHJTQ" : "WILL ADD LATER";
+            planId = paymentFrequency === "monthly" ? "P-5A7812209H7735713M3OHJTQ" : "P-5A7812209H7735713M3OHJTQ";
         }
 
         console.log("Plan ID", planId);
         console.log("subType", subType);
         console.log("paymentFrequency", paymentFrequency);
         // console.log("subType from ref", subTypeRef.current);
-        return actions.subscription.create({
-            'plan_id': planId
-        });
+        try {
+            const subscription = await actions.subscription.create({
+                'plan_id': planId
+            });
+            console.log("Subscription created successfully:", subscription);
+            return subscription;
+        } catch (error) {
+            console.error("Error creating subscription:", error);
+            alert("There was an error creating the subscription. Please try again.");
+        }
 
         // const response = await fetch("http://localhost:4000/paypal/create-subscription", {
         //     method: "POST",
@@ -67,11 +76,25 @@ const PaymentComponent = () => {
                     }}
                     createSubscription={handleSubscriptionCreate}
                     onApprove={(data, actions) => {
+                        console.log("Subscription approved!");
+                        console.log(data);
+                        setEventData(JSON.stringify(data, null, 2));
+                        setEventActions(JSON.stringify(actions, null, 2));
+                        console.log(actions);
                         alert("Subscription Successful!");
                     }}
+                    onError={(err) => {
+                        console.error("PayPal Button Error:", err);
+                        alert("There was an error processing your payment. Please try again.");
+                    }}
                 />
+                <h1>Event Data</h1>
+                <p>{eventData}</p>
+                <h1>Event Actions</h1>
+                <p>{eventActions}</p>
             </div>
         </PayPalScriptProvider>
+        
     );
 }
 
