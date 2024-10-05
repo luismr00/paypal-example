@@ -193,7 +193,7 @@ const cancelSubscription = async (req, res) => {
           return res.status(200).json({ status: 'Cancellation initiated' });
       }
 
-      const data = await response.json();
+      const data = JSON.parse(text);
       console.log(data);
       res.status(200).json({ status: data.status });
   } catch (error) {
